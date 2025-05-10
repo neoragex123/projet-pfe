@@ -26,5 +26,4 @@ public class UtilisateurController {
     public ResponseEntity<List<Utilisateur>> listUsers() {
         return ResponseEntity.ok(utilisateurService.getAllUsers());
     }
-
 }

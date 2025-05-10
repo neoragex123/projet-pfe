@@ -2,12 +2,122 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Accueil GTP</title>
+    <title>Accueil - GTP</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0f4f8;
+            padding: 40px;
+        }
+
+        .dashboard {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 600px;
+            margin: auto;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard h1 {
+            color: #003865;
+            margin-bottom: 10px;
+        }
+
+        .info {
+            margin-bottom: 20px;
+        }
+
+        .info span {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .menu {
+            margin-top: 20px;
+        }
+
+        .menu ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .menu li {
+            margin: 10px 0;
+        }
+
+        .logout-btn {
+            margin-top: 30px;
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #dc3545;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .logout-btn:hover {
+            background-color: #b02a37;
+        }
+    </style>
 </head>
 <body>
 
-<h2>Mot de passe changé avec succès !</h2>
-<h3>Bienvenue sur l'application GTP 🎯</h3>
+<div class="dashboard">
+    <h1>Bienvenue sur l'application GTP 🎯</h1>
+
+    <div class="info">
+        <p>Nom : <span id="nom">...</span></p>
+        <p>Rôle : <span id="role">...</span></p>
+    </div>
+
+    <div class="menu" id="menu">
+        <!-- Menu dynamique selon le rôle -->
+    </div>
+
+    <a class="logout-btn" href="/logout">Se déconnecter</a>
+</div>
+
+<script>
+    // ⚠️ Données simulées (à remplacer plus tard par injection réelle depuis le backend)
+    const user = {
+        nom: "Jean Dupont",
+        role: "MANAGER"
+    };
+
+    document.getElementById("nom").textContent = user.nom;
+    document.getElementById("role").textContent = user.role;
+
+    // Menu dynamique
+    const menu = document.getElementById("menu");
+    const list = document.createElement("ul");
+
+    if (user.role === "RH") {
+        list.innerHTML = `
+            <li><a href="#">Gestion des congés</a></li>
+            <li><a href="#">Justificatifs</a></li>
+        `;
+    } else if (user.role === "EMPLOYE") {
+        list.innerHTML = `
+            <li><a href="#">Pointer</a></li>
+            <li><a href="#">Consulter mon planning</a></li>
+        `;
+    } else if (user.role === "MANAGER") {
+        list.innerHTML = `
+            <li><a href="#">Validation des pointages</a></li>
+            <li><a href="#">Planning de l’équipe</a></li>
+        `;
+    } else {
+        list.innerHTML = `
+            <li><a href="#">Administration</a></li>
+            <li><a href="#">Utilisateurs</a></li>
+        `;
+    }
+
+    menu.appendChild(list);
+</script>
 
 </body>
 </html>

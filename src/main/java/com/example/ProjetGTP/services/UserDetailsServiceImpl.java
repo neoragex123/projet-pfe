@@ -15,18 +15,19 @@ import java.util.Collections;
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
+
     @Autowired
     private UtilisateurRepository utilisateurRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable"));
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable : " + email));
 
         return new User(
                 utilisateur.getEmail(),
                 utilisateur.getMotDePasse(),
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_" + utilisateur.getRole()))
+                Collections.singleton(new SimpleGrantedAuthority("ROLE_" + utilisateur.getRole().name()))
         );
     }
 }

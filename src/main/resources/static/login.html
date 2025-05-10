@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Connexion GTP - Groupe DBS</title>
+  <style>
+        body {
+         margin: 0;
+         font-family: 'Segoe UI', sans-serif;
+         background: url('/images/fond-login.webp') no-repeat center center fixed;
+         background-size: cover;
+         display: flex;
+         justify-content: flex-end;
+         align-items: center;
+         height: 100vh;
+       }
+
+
+       .login-container {
+         background-color: rgba(255, 255, 255, 0.95);
+         padding: 40px;
+         margin-right: 100px;
+         border-radius: 12px;
+         width: 360px;
+         box-shadow: 0 0 20px rgba(0,0,0,0.4);
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+       }
+
+       .logo img {
+         max-width: 90px;
+         margin-bottom: 15px;
+       }
+
+       h2 {
+         text-align: center;
+         margin-bottom: 25px;
+         color: #003865;
+       }
+
+       input {
+         width: 100%;
+         padding: 12px;
+         margin: 10px 0;
+         border: 1px solid #ccc;
+         border-radius: 6px;
+         font-size: 15px;
+       }
+
+       button {
+         width: 100%;
+         padding: 12px;
+         background-color: #007bff;
+         color: white;
+         border: none;
+         border-radius: 6px;
+         font-size: 16px;
+         font-weight: bold;
+         cursor: pointer;
+         transition: background-color 0.3s;
+       }
+
+       button:hover {
+         background-color: #0056b3;
+       }
+
+       .msg {
+         color: red;
+         margin-top: 10px;
+         text-align: center;
+       }
+
+       .forgot {
+         text-align: center;
+         margin-top: 15px;
+         font-size: 0.9em;
+         color: #777;
+       }
+  </style>
+</head>
+<body>
+
+<div class="login-container">
+  <div class="logo">
+    <img src="/images/logodbs.png" alt="Logo DBS" style="max-width: 100px; margin-bottom: 15px;">
+  </div>
+  <h2>Connexion - GTP</h2>
+  <form method="post" action="/login">
+    <input type="email" name="username" placeholder="Adresse e-mail" required>
+    <input type="password" name="password" placeholder="Mot de passe" required>
+    <button type="submit">Se connecter</button>
+  </form>
+  <div class="msg">
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('error')) {
+        document.write("Identifiants incorrects.");
+      }
+      if (params.has('logout')) {
+        document.write("Déconnexion réussie.");
+      }
+    </script>
+  </div>
+  <div class="forgot">Mot de passe oublié ?</div>
+</div>
+
+</body>
+</html>

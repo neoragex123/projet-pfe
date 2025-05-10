@@ -20,6 +20,8 @@ public class changementMotDePasseController {
 
     @PostMapping("/auth/change-password")
     public String changePassword(@RequestParam String newPassword, Authentication authentication) {
+        if (authentication == null) return "redirect:/login?error";
+
         String email = authentication.getName();
         Utilisateur user = utilisateurRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable."));
@@ -28,7 +30,7 @@ public class changementMotDePasseController {
         user.setChangementMotDePasse(false);
         utilisateurRepository.save(user);
 
-        return "redirect:/home.html";
+        return "redirect:/home.html?success=password";
     }
 }
 

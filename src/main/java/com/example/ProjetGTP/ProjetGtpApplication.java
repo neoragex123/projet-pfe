@@ -25,11 +25,13 @@ public class ProjetGtpApplication {
 			if (!repo.existsByEmail("admin@gtp.com")) {
 				Utilisateur admin = new Utilisateur();
 				admin.setNom("Admin");
+				admin.setPrenom("GTP");
 				admin.setEmail("admin@gtp.com");
 				admin.setMotDePasse(encoder.encode("admin123"));
 				admin.setRole(Role.SUPER_ADMIN);
+				admin.setChangementMotDePasse(false);
 				repo.save(admin);
-			};
+			}
 		};
 	}
 }

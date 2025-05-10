@@ -20,6 +20,10 @@ public class UtilisateurService {
     private PasswordEncoder passwordEncoder;
 
     public Utilisateur createUser(UtilisateurDTO dto) {
+        if (utilisateurRepository.existsByEmail(dto.getEmail())) {
+            throw new RuntimeException("Email déjà utilisé");
+        }
+
         Utilisateur user = new Utilisateur();
         user.setNom(dto.getNom());
         user.setPrenom(dto.getPrenom());
@@ -27,6 +31,7 @@ public class UtilisateurService {
         user.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
         user.setRole(dto.getRole());
         user.setChangementMotDePasse(true);
+
         return utilisateurRepository.save(user);
     }
 
