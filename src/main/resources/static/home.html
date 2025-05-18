@@ -2,121 +2,377 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Accueil - GTP</title>
+    <title>Tableau de bord - GTP</title>
     <style>
         body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f0f4f8;
-            padding: 40px;
+          font-family: 'Segoe UI', sans-serif;
+          background: linear-gradient(to bottom right, #e6f0ff, #cce0ff);
+          margin: 0;
+          padding: 30px;
         }
 
-        .dashboard {
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
-            max-width: 600px;
-            margin: auto;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        .container {
+          max-width: 900px;
+          margin: auto;
+          background: white;
+          border-radius: 12px;
+          padding: 30px;
+          box-shadow: 0 0 15px rgba(0,0,0,0.1);
         }
 
-        .dashboard h1 {
-            color: #003865;
-            margin-bottom: 10px;
+        h2 {
+          margin-top: 0;
+          color: #003865;
         }
 
-        .info {
-            margin-bottom: 20px;
+        .flex {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
         }
 
-        .info span {
-            font-weight: bold;
-            color: #007bff;
+        .user-info, .status-block, .pause-block, .history-block {
+          margin-top: 25px;
+          padding: 20px;
+          background: #f9f9f9;
+          border-radius: 8px;
         }
 
-        .menu {
-            margin-top: 20px;
+        .label {
+          font-weight: bold;
         }
 
-        .menu ul {
-            list-style: none;
-            padding-left: 0;
+        button {
+          margin: 6px;
+          padding: 10px 20px;
+          font-size: 14px;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          background-color: #007bff;
+          color: white;
         }
 
-        .menu li {
-            margin: 10px 0;
+        button:hover {
+          background-color: #0056b3;
         }
 
-        .logout-btn {
-            margin-top: 30px;
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #dc3545;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
+        button.stop {
+          background-color: #dc3545;
         }
 
-        .logout-btn:hover {
-            background-color: #b02a37;
+        button.stop:hover {
+          background-color: #a71d2a;
         }
+
+        #status {
+          margin-top: 10px;
+          color: green;
+        }
+
+        .logout {
+          float: right;
+          text-decoration: none;
+          font-weight: bold;
+          color: #dc3545;
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 15px;
+        }
+
+        th, td {
+          border: 1px solid #ccc;
+          padding: 8px 12px;
+          text-align: center;
+        }
+
+        th {
+          background: #003865;
+          color: white;
+        }
+        .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      width: 400px;
+      border-radius: 10px;
+      position: relative;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+    .close {
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      font-size: 22px;
+      cursor: pointer;
+    }
     </style>
 </head>
 <body>
 
-<div class="dashboard">
-    <h1>Bienvenue sur l'application GTP 🎯</h1>
-
-    <div class="info">
-        <p>Nom : <span id="nom">...</span></p>
-        <p>Rôle : <span id="role">...</span></p>
+<div class="container">
+    <div class="flex">
+        <h2>Tableau de bord</h2>
+        <a class="logout" href="/logout">Se déconnecter</a>
     </div>
 
-    <div class="menu" id="menu">
-        <!-- Menu dynamique selon le rôle -->
+    <div class="user-info">
+        <p><span class="label">Nom :</span> <span id="nom">-</span></p>
+        <p><span class="label">Prénom :</span> <span id="prenom">-</span></p>
+        <p><span class="label">Email :</span> <span id="email">-</span></p>
+        <p><span class="label">Rôle :</span> <span id="role">-</span></p>
     </div>
 
-    <a class="logout-btn" href="/logout">Se déconnecter</a>
+    <div class="status-block">
+        <p><span class="label">Date aujourd’hui :</span> <span id="date">-</span></p>
+        <p><span class="label">Heure d’arrivée :</span> <span id="arrivee">-</span></p>
+        <p><span class="label">Vous êtes arrivé depuis :</span> <span id="dureeDepuisArrivee">-</span></p>
+        <p><span class="label">Heure actuelle :</span> <span id="heureActuelle">-</span></p>
+    </div>
+
+    <div class="pause-block">
+        <h3>Déclarer une pause</h3>
+        <button onclick="demarrerPause('CAFÉ')">Pause Café</button>
+        <button onclick="demarrerPause('DÉJEUNER')">Pause Déjeuner</button>
+        <button onclick="demarrerPause('FORMATION')">Pause Formation</button>
+        <button class="stop" onclick="cloturerPause()">Fin de pause</button>
+        <p><strong>Durée totale des pauses :</strong> <span id="dureePauses">-</span></p>
+        <div id="status"></div>
+    </div>
+
+    <div class="history-block">
+        <h3>Pauses du jour</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Type</th>
+                <th>Heure début</th>
+                <th>Heure fin</th>
+                <th>Durée (min)</th>
+            </tr>
+            </thead>
+            <tbody id="table-pauses"></tbody>
+        </table>
+    </div>
+    <div style="text-align: center; margin-top: 30px;">
+        <button onclick="openCongeModal()">🗓 Faire une demande de congé</button>
+    </div>
+    <div class="history-block">
+        <h3>📋 Mes demandes de congés</h3>
+        <table>
+            <thead><tr><th>Type</th><th>Date début</th><th>Date fin</th><th>Statut</th><th>Justificatif</th></tr></thead>
+            <tbody id="table-conges"></tbody>
+        </table>
+    </div>
 </div>
 
+<!-- Modale de demande de congé -->
+<div id="congeModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeCongeModal()">&times;</span>
+        <h3>Demande de congé</h3>
+        <form id="form-conge" enctype="multipart/form-data">
+            <label>Type de congé :</label><br>
+            <select name="type" required>
+                <option value="ANNUEL">Annuel</option>
+                <option value="EXCEPTIONNEL">Exceptionnel</option>
+                <option value="MALADIE">Maladie</option>
+                <option value="DEMI_JOURNEE">Demi-journée</option>
+            </select><br><br>
+            <label>Date début :</label><br>
+            <input type="date" name="dateDebut" required><br><br>
+            <label>Date fin :</label><br>
+            <input type="date" name="dateFin" required><br><br>
+            <label>Commentaire :</label><br>
+            <textarea name="commentaire" rows="3" style="width: 100%;"></textarea><br><br>
+            <label>Justificatif :</label><br>
+            <input type="file" name="justificatif"><br><br>
+            <button type="submit">📤 Envoyer</button>
+            <p id="msg-conge" style="color: green;"></p>
+        </form>
+    </div>
+</div>
 <script>
-    // ⚠️ Données simulées (à remplacer plus tard par injection réelle depuis le backend)
-    const user = {
-        nom: "Jean Dupont",
-        role: "MANAGER"
-    };
+    let arriveeTime = null;
 
-    document.getElementById("nom").textContent = user.nom;
-    document.getElementById("role").textContent = user.role;
-
-    // Menu dynamique
-    const menu = document.getElementById("menu");
-    const list = document.createElement("ul");
-
-    if (user.role === "RH") {
-        list.innerHTML = `
-            <li><a href="#">Gestion des congés</a></li>
-            <li><a href="#">Justificatifs</a></li>
-        `;
-    } else if (user.role === "EMPLOYE") {
-        list.innerHTML = `
-            <li><a href="#">Pointer</a></li>
-            <li><a href="#">Consulter mon planning</a></li>
-        `;
-    } else if (user.role === "MANAGER") {
-        list.innerHTML = `
-            <li><a href="#">Validation des pointages</a></li>
-            <li><a href="#">Planning de l’équipe</a></li>
-        `;
-    } else {
-        list.innerHTML = `
-            <li><a href="#">Administration</a></li>
-            <li><a href="#">Utilisateurs</a></li>
-        `;
+    function formatTime(date) {
+      return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     }
 
-    menu.appendChild(list);
+    function demarrerPause(type) {
+      fetch('/api/pauses/debut?type=' + type, { method: 'POST' })
+        .then(() => {
+          document.getElementById("status").textContent = `Début de pause "${type}" enregistré.`;
+          loadPauses();
+          loadDureePauses();
+        });
+    }
+
+    function cloturerPause() {
+      fetch('/api/pauses/fin', { method: 'POST' })
+        .then(() => {
+          document.getElementById("status").textContent = "Fin de pause enregistrée.";
+          loadPauses();
+          loadDureePauses();
+        });
+    }
+
+    function loadUserInfo() {
+      fetch('/api/users/me')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("nom").textContent = data.nom;
+          document.getElementById("prenom").textContent = data.prenom;
+          document.getElementById("email").textContent = data.email;
+          document.getElementById("role").textContent = data.role;
+        });
+    }
+
+    function loadPointage() {
+      fetch('/api/pointage/aujourdhui')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("date").textContent = data.date;
+          document.getElementById("arrivee").textContent = data.heureArrivee.split('.')[0];
+          arriveeTime = new Date();
+          const [h, m, s] = data.heureArrivee.split(":");
+          arriveeTime.setHours(+h, +m, +s);
+        });
+    }
+
+    function updateDureeDepuisArrivee() {
+      if (!arriveeTime) return;
+      const now = new Date();
+      const diff = Math.floor((now - arriveeTime) / 1000 / 60); // minutes
+      const h = Math.floor(diff / 60);
+      const m = diff % 60;
+      document.getElementById("dureeDepuisArrivee").textContent = `${h}h ${m}min`;
+    }
+
+    function loadDureePauses() {
+      fetch('/api/pause-stats/duree-aujourdhui')
+        .then(res => res.text())
+        .then(data => {
+          document.getElementById("dureePauses").textContent = `${data} minutes`;
+        });
+    }
+
+    function loadPauses() {
+      fetch('/api/pause-stats/liste')
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.getElementById("table-pauses");
+          tbody.innerHTML = "";
+          data.forEach(p => {
+            const tr = document.createElement("tr");
+            const duration = p.heureFin
+              ? Math.floor((new Date("1970-01-01T" + p.heureFin) - new Date("1970-01-01T" + p.heureDebut)) / 60000)
+              : "-";
+            tr.innerHTML = `
+              <td>${p.type}</td>
+              <td>${p.heureDebut ? p.heureDebut.split('.')[0] : '-'}</td>
+              <td>${p.heureFin ? p.heureFin.split('.')[0] : '-'}</td>
+              <td>${duration}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        });
+    }
+    function openCongeModal() {
+  document.getElementById("congeModal").style.display = "block";
+}
+function closeCongeModal() {
+  document.getElementById("congeModal").style.display = "none";
+}
+
+document.getElementById("form-conge").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const form = e.target;
+
+  // Étape 1 : créer le congé
+  fetch("/api/conges", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: form.type.value,
+      dateDebut: form.dateDebut.value,
+      dateFin: form.dateFin.value,
+      commentaire: form.commentaire.value
+    })
+  })
+    .then(res => res.json())
+    .then(data => {
+      const congeId = data.id;
+      const fichier = form.justificatif.files[0];
+      if (fichier) {
+        const fileData = new FormData();
+        fileData.append("file", fichier);
+        return fetch(`/api/conges/${congeId}/justificatif`, {
+          method: "POST",
+          body: fileData
+        });
+      }
+    })
+    .then(() => {
+      document.getElementById("msg-conge").textContent = "✅ Demande envoyée.";
+      loadCongesUtilisateur();
+      setTimeout(() => {
+        closeCongeModal();
+        form.reset();
+        document.getElementById("msg-conge").textContent = "";
+      }, 2000);
+    })
+    .catch(() => {
+      document.getElementById("msg-conge").textContent = "❌ Erreur.";
+    });
+});
+
+function loadCongesUtilisateur() {
+  fetch('/api/conges/mes')
+    .then(res => res.json())
+    .then(data => {
+      const tbody = document.getElementById("table-conges");
+      tbody.innerHTML = "";
+      data.forEach(c => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${c.type}</td>
+          <td>${c.dateDebut}</td>
+          <td>${c.dateFin}</td>
+          <td>${c.statut}</td>
+          <td>${c.justificatifPath
+              ? `<a href='/${c.justificatifPath}' target='_blank'>📎 Voir</a>` : '-'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    });
+}
+
+// ⚠️ Appelle la fonction au chargement
+loadCongesUtilisateur();
+
+    // ✅ Horloge en direct
+    setInterval(() => {
+      document.getElementById("heureActuelle").textContent = formatTime(new Date());
+      updateDureeDepuisArrivee();
+    }, 1000);
+
+    loadUserInfo();
+    loadPointage();
+    loadDureePauses();
+    loadPauses();
 </script>
 
 </body>

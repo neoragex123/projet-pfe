@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Déclaration de pause - GTP</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f5f7fa;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 60px;
+        }
+
+        h2 {
+          color: #003865;
+        }
+
+        button {
+          margin: 10px;
+          padding: 12px 25px;
+          font-size: 16px;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          background-color: #007bff;
+          color: white;
+          transition: background-color 0.2s;
+        }
+
+        button:hover {
+          background-color: #0056b3;
+        }
+
+        .stop {
+          background-color: #dc3545;
+        }
+
+        .stop:hover {
+          background-color: #a71d2a;
+        }
+
+        #status {
+          margin-top: 20px;
+          font-size: 14px;
+          color: green;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Déclarer une pause</h2>
+
+<button onclick="demarrerPause('CAFÉ')">Pause Café ☕</button>
+<button onclick="demarrerPause('DÉJEUNER')">Pause Déjeuner 🍽️</button>
+<button onclick="demarrerPause('FORMATION')">Pause Formation 📘</button>
+<button class="stop" onclick="cloturerPause()">Fin de pause ⏱</button>
+
+<div id="status"></div>
+
+<script>
+    function demarrerPause(type) {
+      fetch('/api/pauses/debut?type=' + type, { method: 'POST' })
+        .then(res => {
+          document.getElementById('status').textContent = `Début de pause "${type}" enregistré.`;
+        })
+        .catch(err => console.error(err));
+    }
+
+    function cloturerPause() {
+      fetch('/api/pauses/fin', { method: 'POST' })
+        .then(res => {
+          document.getElementById('status').textContent = "Fin de pause enregistrée.";
+        })
+        .catch(err => console.error(err));
+    }
+</script>
+
+</body>
+</html>
