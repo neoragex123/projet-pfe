@@ -30,8 +30,7 @@ public class AuthController {
             return "redirect:/login.html?error";
         }
 
-        // ✅ Enregistrer automatiquement l'heure d'arrivée à la connexion
-        pointageService.enregistrerHeureArrivee(user);
+
 
         // ✅ Forcer le changement de mot de passe si nécessaire
         if (user.isChangementMotDePasse()) {

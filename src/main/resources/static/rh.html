@@ -1,10 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <title>Validation congés – RH</title>
+  <style>
+    body { font-family: Segoe UI; background: #f2f4f8; padding: 40px; }
+    table { border-collapse: collapse; width: 100%; background: #fff; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+    th { background-color: #003865; color: white; }
+    button { margin: 4px; padding: 6px 12px; cursor: pointer; border: none; border-radius: 4px; }
+    .valider { background-color: #28a745; color: white; }
+    .refuser { background-color: #dc3545; color: white; }
+  </style>
 </head>
 <body>
-$END$
+
+<h2>📋 Demandes de congé en attente</h2>
+
+<table>
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>Type</th>
+    <th>Date début</th>
+    <th>Date fin</th>
+    <th>Justificatif</th>
+    <th>Action</th>
+  </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+
+<script>
+  function chargerConges() {
+    fetch("/api/conges/en-attente")
+      .then(r => r.json())
+      .then(data => {
+        const tbody = document.getElementById("tbody");
+        tbody.innerHTML = "";
+        data.forEach(conge => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${conge.id}</td>
+            <td>${conge.type}</td>
+            <td>${conge.dateDebut}</td>
+            <td>${conge.dateFin}</td>
+            <td>${conge.justificatifPath ? `<a href="/${conge.justificatifPath}" target="_blank">📎</a>` : '-'}</td>
+            <td>
+              <button class="valider" onclick="changerStatut(${conge.id}, 'VALIDE')">Valider</button>
+              <button class="refuser" onclick="changerStatut(${conge.id}, 'REFUSE')">Refuser</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+  }
+
+  function changerStatut(id, statut) {
+    fetch(`/api/conges/${id}/statut?statut=${statut}`, { method: 'PATCH' })
+      .then(() => chargerConges());
+  }
+
+  chargerConges();
+</script>
+
 </body>
 </html>

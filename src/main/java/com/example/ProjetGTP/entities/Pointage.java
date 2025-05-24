@@ -1,17 +1,19 @@
 package com.example.ProjetGTP.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class Pointage {
 
     @Id
@@ -19,9 +21,15 @@ public class Pointage {
     private Long id;
 
     private LocalDate date;
+
     private LocalTime heureArrivee;
+
     private LocalTime heureDepart;
 
     @ManyToOne
+    @JsonIgnore
     private Utilisateur utilisateur;
+
+    @OneToMany(mappedBy = "pointage", cascade = CascadeType.ALL)
+    private List<Pause> pauses;
 }

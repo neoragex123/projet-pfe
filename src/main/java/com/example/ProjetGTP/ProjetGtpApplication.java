@@ -12,6 +12,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
+
 @SpringBootApplication
 public class ProjetGtpApplication {
 
@@ -30,6 +32,7 @@ public class ProjetGtpApplication {
 				admin.setMotDePasse(encoder.encode("admin123"));
 				admin.setRole(Role.SUPER_ADMIN);
 				admin.setChangementMotDePasse(false);
+				admin.setDateEmbauche(LocalDate.of(2024, 1, 1));
 				repo.save(admin);
 			}
 		};

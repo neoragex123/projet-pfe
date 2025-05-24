@@ -1,10 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
+<html lang="fr">
+<head><meta charset="UTF-8"><title>Créer un utilisateur</title></head>
 <body>
-$END$
+<h2>Création utilisateur</h2>
+<form id="userForm">
+  <input name="nom" placeholder="Nom" required><br>
+  <input name="prenom" placeholder="Prénom" required><br>
+  <input name="email" placeholder="Email" type="email" required><br>
+  <input name="motDePasse" placeholder="Mot de passe" type="password" required><br>
+  <select name="role">
+    <option>EMPLOYE</option>
+    <option>MANAGER</option>
+    <option>RH</option>
+  </select><br><br>
+  <label>Date d'embauche :</label><br>
+  <input type="date" name="dateEmbauche" required value="<%= new java.util.Date().toISOString().slice(0,10) %>">
+  <button type="submit">Créer</button>
+</form>
+<div id="msg"></div>
+
+<script>
+  document.getElementById("userForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target));
+    fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(r => {
+      document.getElementById("msg").textContent = r.ok ? "✅ Utilisateur créé" : "❌ Erreur";
+    });
+  });
+</script>
 </body>
 </html>

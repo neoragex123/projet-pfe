@@ -27,10 +27,14 @@ public class Conge {
 
     private String commentaire;
 
-    private String justificatifPath; // chemin du fichier PDF ou image
+    @Column(name = "justificatif_path")
+    private String justificatifPath;
 
     @ManyToOne
     private Utilisateur demandeur;
 
     private LocalDate dateDemande;
+
+    private String validateurEmail;
+    private LocalDate dateValidation;
 }

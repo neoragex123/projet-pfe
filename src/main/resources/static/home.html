@@ -6,13 +6,13 @@
     <style>
         body {
           font-family: 'Segoe UI', sans-serif;
-          background: linear-gradient(to bottom right, #e6f0ff, #cce0ff);
+          background: linear-gradient(to bottom right, #eef4fb, #d2e4ff);
           margin: 0;
           padding: 30px;
         }
 
         .container {
-          max-width: 900px;
+          max-width: 1000px;
           margin: auto;
           background: white;
           border-radius: 12px;
@@ -20,7 +20,7 @@
           box-shadow: 0 0 15px rgba(0,0,0,0.1);
         }
 
-        h2 {
+        h2, h3 {
           margin-top: 0;
           color: #003865;
         }
@@ -31,7 +31,7 @@
           align-items: center;
         }
 
-        .user-info, .status-block, .pause-block, .history-block {
+        .section {
           margin-top: 25px;
           padding: 20px;
           background: #f9f9f9;
@@ -43,7 +43,7 @@
         }
 
         button {
-          margin: 6px;
+          margin: 6px 6px 12px 0;
           padding: 10px 20px;
           font-size: 14px;
           border: none;
@@ -65,13 +65,7 @@
           background-color: #a71d2a;
         }
 
-        #status {
-          margin-top: 10px;
-          color: green;
-        }
-
         .logout {
-          float: right;
           text-decoration: none;
           font-weight: bold;
           color: #dc3545;
@@ -93,66 +87,106 @@
           background: #003865;
           color: white;
         }
+
+        .menu-block ul {
+          list-style: none;
+          padding: 0;
+        }
+
+        .menu-block li {
+          margin-bottom: 8px;
+        }
+
+        .menu-block a {
+          text-decoration: none;
+          color: #003865;
+          font-weight: bold;
+        }
+
+        .menu-block a:hover {
+          text-decoration: underline;
+        }
+
         .modal {
-      display: none;
-      position: fixed;
-      z-index: 999;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
-      background-color: rgba(0,0,0,0.5);
-    }
-    .modal-content {
-      background-color: #fff;
-      margin: 10% auto;
-      padding: 20px;
-      width: 400px;
-      border-radius: 10px;
-      position: relative;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
-    }
-    .close {
-      position: absolute;
-      right: 15px;
-      top: 10px;
-      font-size: 22px;
-      cursor: pointer;
-    }
+          display: none;
+          position: fixed;
+          z-index: 999;
+          left: 0; top: 0;
+          width: 100%; height: 100%;
+          background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+          background-color: #fff;
+          margin: 10% auto;
+          padding: 20px;
+          width: 400px;
+          border-radius: 10px;
+          position: relative;
+          box-shadow: 0 0 20px rgba(0,0,0,0.3);
+        }
+
+        .close {
+          position: absolute;
+          right: 15px;
+          top: 10px;
+          font-size: 22px;
+          cursor: pointer;
+        }
     </style>
 </head>
 <body>
-
 <div class="container">
+
     <div class="flex">
         <h2>Tableau de bord</h2>
         <a class="logout" href="/logout">Se déconnecter</a>
     </div>
 
-    <div class="user-info">
+    <!-- Informations utilisateur -->
+    <div class="section">
+        <h3>👤 Informations</h3>
         <p><span class="label">Nom :</span> <span id="nom">-</span></p>
         <p><span class="label">Prénom :</span> <span id="prenom">-</span></p>
         <p><span class="label">Email :</span> <span id="email">-</span></p>
         <p><span class="label">Rôle :</span> <span id="role">-</span></p>
+        <p><span class="label">Solde de congés :</span> <span id="soldeConges">-</span> jours</p>
     </div>
 
+    <!-- Pointage -->
     <div class="status-block">
-        <p><span class="label">Date aujourd’hui :</span> <span id="date">-</span></p>
-        <p><span class="label">Heure d’arrivée :</span> <span id="arrivee">-</span></p>
-        <p><span class="label">Vous êtes arrivé depuis :</span> <span id="dureeDepuisArrivee">-</span></p>
-        <p><span class="label">Heure actuelle :</span> <span id="heureActuelle">-</span></p>
+        <h3>📍 Pointage de la journée</h3>
+        <button onclick="pointerArrivee()">🕗 Pointer l’arrivée</button>
+        <button onclick="pointerDepart()">🚪 Fin de journée</button>
+        <p><strong>Date aujourd’hui :</strong> <span id="date">-</span></p>
+        <p><strong>Heure d’arrivée :</strong> <span id="arrivee">-</span></p>
+        <p><strong>Heure de départ :</strong> <span id="depart">-</span></p>
+        <p><strong>Vous êtes arrivé depuis :</strong> <span id="dureeDepuisArrivee">-</span></p>
+        <p><strong>Heure actuelle :</strong> <span id="heureActuelle">-</span></p>
+    </div>
+    <!-- Menu RH -->
+    <div class="section menu-block" id="menu-rh" style="display: none;">
+        <h3>🎛 Menu RH</h3>
+        <ul>
+            <li><a href="/ajout-user.html">👤 Ajouter un utilisateur</a></li>
+            <li><a href="/rh.html">📋 Gestion des congés</a></li>
+        </ul>
     </div>
 
-    <div class="pause-block">
-        <h3>Déclarer une pause</h3>
-        <button onclick="demarrerPause('CAFÉ')">Pause Café</button>
-        <button onclick="demarrerPause('DÉJEUNER')">Pause Déjeuner</button>
-        <button onclick="demarrerPause('FORMATION')">Pause Formation</button>
-        <button class="stop" onclick="cloturerPause()">Fin de pause</button>
+    <!-- Pause -->
+    <div class="section">
+        <h3>⏸️ Pauses</h3>
+        <button onclick="demarrerPause('CAFÉ')">☕ Pause Café</button>
+        <button onclick="demarrerPause('DÉJEUNER')">🥪 Pause Déjeuner</button>
+        <button onclick="demarrerPause('FORMATION')">📚 Pause Formation</button>
+        <button class="stop" onclick="cloturerPause()">✅ Fin de pause</button>
         <p><strong>Durée totale des pauses :</strong> <span id="dureePauses">-</span></p>
         <div id="status"></div>
     </div>
 
-    <div class="history-block">
-        <h3>Pauses du jour</h3>
+    <!-- Tableau des pauses -->
+    <div class="section">
+        <h3>📅 Historique des pauses</h3>
         <table>
             <thead>
             <tr>
@@ -165,19 +199,25 @@
             <tbody id="table-pauses"></tbody>
         </table>
     </div>
+    <!-- Bouton pour demander un congé -->
     <div style="text-align: center; margin-top: 30px;">
         <button onclick="openCongeModal()">🗓 Faire une demande de congé</button>
     </div>
-    <div class="history-block">
+
+    <!-- Historique des congés -->
+    <div class="section">
         <h3>📋 Mes demandes de congés</h3>
         <table>
-            <thead><tr><th>Type</th><th>Date début</th><th>Date fin</th><th>Statut</th><th>Justificatif</th></tr></thead>
+            <thead>
+            <tr><th>Type</th><th>Date début</th><th>Date fin</th><th>Statut</th><th>Justificatif</th></tr>
+            </thead>
             <tbody id="table-conges"></tbody>
         </table>
     </div>
-</div>
 
-<!-- Modale de demande de congé -->
+</div> <!-- Fin de .container -->
+
+<!-- Modal : Demande de congé -->
 <div id="congeModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeCongeModal()">&times;</span>
@@ -190,14 +230,19 @@
                 <option value="MALADIE">Maladie</option>
                 <option value="DEMI_JOURNEE">Demi-journée</option>
             </select><br><br>
+
             <label>Date début :</label><br>
             <input type="date" name="dateDebut" required><br><br>
+
             <label>Date fin :</label><br>
             <input type="date" name="dateFin" required><br><br>
+
             <label>Commentaire :</label><br>
             <textarea name="commentaire" rows="3" style="width: 100%;"></textarea><br><br>
+
             <label>Justificatif :</label><br>
             <input type="file" name="justificatif"><br><br>
+
             <button type="submit">📤 Envoyer</button>
             <p id="msg-conge" style="color: green;"></p>
         </form>
@@ -208,6 +253,30 @@
 
     function formatTime(date) {
       return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    function pointerArrivee() {
+      fetch('/api/pointage/arrivee', { method: 'POST' })
+        .then(res => {
+          if (res.ok) {
+            alert("✅ Arrivée enregistrée !");
+            loadPointage();
+          } else {
+            res.text().then(msg => alert("⚠️ " + msg));
+          }
+        });
+    }
+
+    function pointerDepart() {
+      fetch('/api/pointage/depart', { method: 'POST' })
+        .then(res => {
+          if (res.ok) {
+            alert("🚪 Fin de journée enregistrée !");
+            loadPointage();
+          } else {
+            res.text().then(msg => alert("⚠️ " + msg));
+          }
+        });
     }
 
     function demarrerPause(type) {
@@ -236,6 +305,9 @@
           document.getElementById("prenom").textContent = data.prenom;
           document.getElementById("email").textContent = data.email;
           document.getElementById("role").textContent = data.role;
+          if (data.role === 'RH' || data.role === 'SUPER_ADMIN') {
+            document.getElementById("menu-rh").style.display = 'block';
+          }
         });
     }
 
@@ -243,18 +315,22 @@
       fetch('/api/pointage/aujourdhui')
         .then(res => res.json())
         .then(data => {
-          document.getElementById("date").textContent = data.date;
-          document.getElementById("arrivee").textContent = data.heureArrivee.split('.')[0];
-          arriveeTime = new Date();
-          const [h, m, s] = data.heureArrivee.split(":");
-          arriveeTime.setHours(+h, +m, +s);
+          document.getElementById("date").textContent = data.date || "-";
+          document.getElementById("arrivee").textContent = data.heureArrivee?.split('.')[0] || "-";
+          document.getElementById("depart").textContent = data.heureDepart?.split('.')[0] || "-";
+
+          if (data.heureArrivee) {
+            const [h, m, s] = data.heureArrivee.split(":");
+            arriveeTime = new Date();
+            arriveeTime.setHours(+h, +m, +s);
+          }
         });
     }
 
     function updateDureeDepuisArrivee() {
       if (!arriveeTime) return;
       const now = new Date();
-      const diff = Math.floor((now - arriveeTime) / 1000 / 60); // minutes
+      const diff = Math.floor((now - arriveeTime) / 60000); // en minutes
       const h = Math.floor(diff / 60);
       const m = diff % 60;
       document.getElementById("dureeDepuisArrivee").textContent = `${h}h ${m}min`;
@@ -275,10 +351,10 @@
           const tbody = document.getElementById("table-pauses");
           tbody.innerHTML = "";
           data.forEach(p => {
-            const tr = document.createElement("tr");
             const duration = p.heureFin
               ? Math.floor((new Date("1970-01-01T" + p.heureFin) - new Date("1970-01-01T" + p.heureDebut)) / 60000)
               : "-";
+            const tr = document.createElement("tr");
             tr.innerHTML = `
               <td>${p.type}</td>
               <td>${p.heureDebut ? p.heureDebut.split('.')[0] : '-'}</td>
@@ -289,91 +365,96 @@
           });
         });
     }
+
     function openCongeModal() {
-  document.getElementById("congeModal").style.display = "block";
-}
-function closeCongeModal() {
-  document.getElementById("congeModal").style.display = "none";
-}
+      document.getElementById("congeModal").style.display = "block";
+    }
 
-document.getElementById("form-conge").addEventListener("submit", function (e) {
-  e.preventDefault();
+    function closeCongeModal() {
+      document.getElementById("congeModal").style.display = "none";
+    }
 
-  const form = e.target;
-
-  // Étape 1 : créer le congé
-  fetch("/api/conges", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      type: form.type.value,
-      dateDebut: form.dateDebut.value,
-      dateFin: form.dateFin.value,
-      commentaire: form.commentaire.value
-    })
-  })
-    .then(res => res.json())
-    .then(data => {
-      const congeId = data.id;
-      const fichier = form.justificatif.files[0];
-      if (fichier) {
-        const fileData = new FormData();
-        fileData.append("file", fichier);
-        return fetch(`/api/conges/${congeId}/justificatif`, {
-          method: "POST",
-          body: fileData
+    document.getElementById("form-conge").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const form = e.target;
+      fetch("/api/conges", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: form.type.value,
+          dateDebut: form.dateDebut.value,
+          dateFin: form.dateFin.value,
+          commentaire: form.commentaire.value
+        })
+      })
+        .then(res => res.json())
+        .then(data => {
+          const congeId = data.id;
+          const fichier = form.justificatif.files[0];
+          if (fichier) {
+            const formData = new FormData();
+            formData.append("file", fichier);
+            return fetch(`/api/conges/${congeId}/justificatif`, {
+              method: "POST",
+              body: formData
+            });
+          }
+        })
+        .then(() => {
+          document.getElementById("msg-conge").textContent = "✅ Demande envoyée.";
+          loadCongesUtilisateur();
+          setTimeout(() => {
+            closeCongeModal();
+            form.reset();
+            document.getElementById("msg-conge").textContent = "";
+          }, 2000);
+        })
+        .catch(() => {
+          document.getElementById("msg-conge").textContent = "❌ Erreur.";
         });
-      }
-    })
-    .then(() => {
-      document.getElementById("msg-conge").textContent = "✅ Demande envoyée.";
-      loadCongesUtilisateur();
-      setTimeout(() => {
-        closeCongeModal();
-        form.reset();
-        document.getElementById("msg-conge").textContent = "";
-      }, 2000);
-    })
-    .catch(() => {
-      document.getElementById("msg-conge").textContent = "❌ Erreur.";
     });
-});
 
-function loadCongesUtilisateur() {
-  fetch('/api/conges/mes')
-    .then(res => res.json())
-    .then(data => {
-      const tbody = document.getElementById("table-conges");
-      tbody.innerHTML = "";
-      data.forEach(c => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${c.type}</td>
-          <td>${c.dateDebut}</td>
-          <td>${c.dateFin}</td>
-          <td>${c.statut}</td>
-          <td>${c.justificatifPath
-              ? `<a href='/${c.justificatifPath}' target='_blank'>📎 Voir</a>` : '-'}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    });
-}
+    function loadCongesUtilisateur() {
+      fetch('/api/conges/mes')
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.getElementById("table-conges");
+          tbody.innerHTML = "";
+          data.forEach(c => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${c.type}</td>
+              <td>${c.dateDebut}</td>
+              <td>${c.dateFin}</td>
+              <td>${c.statut}</td>
+              <td>${c.justificatifPath ? `<a href='/${c.justificatifPath}' target='_blank'>📎 Voir</a>` : '-'}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        });
+    }
 
-// ⚠️ Appelle la fonction au chargement
-loadCongesUtilisateur();
+    function loadSoldeConges() {
+      fetch('/api/conges/solde')
+        .then(r => r.text())
+        .then(d => {
+          document.getElementById("soldeConges").textContent = parseFloat(d).toFixed(1);
+        });
+    }
+
+    // ✅ Initialisation au chargement
+    loadUserInfo();
+    loadPointage();
+    loadDureePauses();
+    loadPauses();
+    loadCongesUtilisateur();
+    loadSoldeConges();
 
     // ✅ Horloge en direct
     setInterval(() => {
       document.getElementById("heureActuelle").textContent = formatTime(new Date());
       updateDureeDepuisArrivee();
     }, 1000);
-
-    loadUserInfo();
-    loadPointage();
-    loadDureePauses();
-    loadPauses();
 </script>
-
 </body>
 </html>

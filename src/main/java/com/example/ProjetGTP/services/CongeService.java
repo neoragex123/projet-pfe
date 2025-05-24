@@ -56,6 +56,20 @@ public class CongeService {
         return congeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Congé introuvable"));
     }
+    public Conge changerStatut(Long id, StatutConge nouveauStatut, String validateurEmail) {
+        Conge conge = congeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Congé introuvable"));
+
+        if (conge.getStatut() != StatutConge.EN_ATTENTE) {
+            throw new RuntimeException("Déjà validé ou refusé");
+        }
+
+        conge.setStatut(nouveauStatut);
+        conge.setValidateurEmail(validateurEmail);
+        conge.setDateValidation(LocalDate.now());
+
+        return congeRepository.save(conge);
+    }
 
     public Conge updateConge(Conge conge) {
         return congeRepository.save(conge);

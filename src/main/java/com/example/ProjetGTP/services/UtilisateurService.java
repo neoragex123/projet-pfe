@@ -31,6 +31,8 @@ public class UtilisateurService {
         user.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
         user.setRole(dto.getRole());
         user.setChangementMotDePasse(true);
+        user.setDateEmbauche(dto.getDateEmbauche());
+
 
         return utilisateurRepository.save(user);
     }
