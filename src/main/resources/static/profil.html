@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Profil utilisateur - GTP</title>
+    <style>
+        body {
+          font-family: 'Segoe UI', sans-serif;
+          background-color: #f5f7fa;
+          padding: 40px;
+        }
+
+        .container {
+          max-width: 900px;
+          margin: auto;
+          background: white;
+          padding: 30px;
+          border-radius: 10px;
+          box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+          color: #003865;
+          margin-top: 0;
+        }
+
+        .info-block {
+          margin-bottom: 30px;
+        }
+
+        .info-block p {
+          font-size: 16px;
+          line-height: 1.5;
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 20px;
+        }
+
+        th, td {
+          border: 1px solid #ccc;
+          padding: 10px;
+          text-align: center;
+        }
+
+        th {
+          background-color: #003865;
+          color: white;
+        }
+
+        .retour {
+          margin-top: 30px;
+          display: block;
+          text-align: center;
+          color: #007bff;
+          text-decoration: none;
+          font-weight: bold;
+        }
+
+        .retour:hover {
+          text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>👤 Mon profil</h2>
+
+    <div class="info-block">
+        <p><strong>Nom :</strong> <span id="nom">-</span></p>
+        <p><strong>Prénom :</strong> <span id="prenom">-</span></p>
+        <p><strong>Email :</strong> <span id="email">-</span></p>
+        <p><strong>Rôle :</strong> <span id="role">-</span></p>
+        <p><strong>Date d’embauche :</strong> <span id="dateEmbauche">-</span></p>
+        <p><strong>Ancienneté :</strong> <span id="anciennete">-</span></p>
+    </div>
+
+    <h3>📜 Historique des actions</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Type d’action</th>
+            <th>Description</th>
+        </tr>
+        </thead>
+        <tbody id="historiqueBody">
+        <tr><td colspan="3">Chargement...</td></tr>
+        </tbody>
+    </table>
+
+    <a href="/home.html" class="retour">← Retour au tableau de bord</a>
+</div>
+
+<script>
+    function chargerProfil() {
+      fetch("/api/users/me")
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById("nom").textContent = data.nom;
+          document.getElementById("prenom").textContent = data.prenom;
+          document.getElementById("email").textContent = data.email;
+          document.getElementById("role").textContent = data.role;
+          document.getElementById("dateEmbauche").textContent = data.dateEmbauche;
+          document.getElementById("anciennete").textContent = calculerAnciennete(data.dateEmbauche);
+        });
+    }
+
+    function chargerHistorique() {
+  fetch("/api/historique/me")
+    .then(r => r.json())
+    .then(data => {
+      const tbody = document.getElementById("historiqueBody");
+      tbody.innerHTML = "";
+      if (data.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='3'>Aucune action enregistrée.</td></tr>";
+        return;
+      }
+
+      data.forEach(action => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${new Date(action.dateAction).toLocaleString()}</td>
+          <td>${action.typeAction}</td>
+          <td>${action.description}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    });
+}
+
+    function calculerAnciennete(dateStr) {
+      const embauche = new Date(dateStr);
+      const maintenant = new Date();
+      const diffMois = (maintenant.getFullYear() - embauche.getFullYear()) * 12 + (maintenant.getMonth() - embauche.getMonth());
+      return `${Math.floor(diffMois / 12)} ans et ${diffMois % 12} mois`;
+    }
+
+    // Chargement initial
+    chargerProfil();
+    chargerHistorique();
+</script>
+</body>
+</html>

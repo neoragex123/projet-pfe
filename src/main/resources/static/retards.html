@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Retards des employés</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f8;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    h2, h3 {
+      color: #003865;
+      text-align: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 25px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #003865;
+      color: white;
+    }
+
+    .retour {
+      display: block;
+      margin-top: 30px;
+      text-align: center;
+      color: #007bff;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .retour:hover {
+      text-decoration: underline;
+    }
+
+    form {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    label, input, button {
+      margin: 10px;
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>🚨 Retards enregistrés aujourd'hui</h2>
+
+  <table>
+    <thead>
+    <tr>
+      <th>Nom</th>
+      <th>Date</th>
+      <th>Heure prévue</th>
+      <th>Heure d’arrivée</th>
+    </tr>
+    </thead>
+    <tbody id="retardBody">
+    <tr><td colspan="4">Chargement...</td></tr>
+    </tbody>
+  </table>
+
+  <h3>📊 Retards cumulés par employé</h3>
+  <table>
+    <thead>
+    <tr>
+      <th>Employé</th>
+      <th>Nombre de retards</th>
+    </tr>
+    </thead>
+    <tbody id="retards-cumules">
+    <tr><td colspan="2">Chargement...</td></tr>
+    </tbody>
+  </table>
+
+  <h3>📅 Filtrer les retards par période</h3>
+  <form id="filtreForm">
+    <label>Date de début :</label>
+    <input type="date" id="startDate" required>
+    <label>Date de fin :</label>
+    <input type="date" id="endDate" required>
+    <button type="submit">🔍 Filtrer</button>
+  </form>
+
+  <a href="/home.html" class="retour">← Retour</a>
+</div>
+
+<script>
+  let usersMap = {};
+  let planningsMap = {};
+
+  async function chargerUtilisateurs() {
+    const res = await fetch("/api/users/all");
+    const data = await res.json();
+    data.forEach(u => {
+      usersMap[u.id] = `${u.prenom} ${u.nom}`;
+    });
+  }
+
+  async function chargerPlannings() {
+    const res = await fetch("/api/planning/tous");
+    const data = await res.json();
+    planningsMap = {};
+    data.forEach(p => {
+      const key = `${p.utilisateur.id}_${p.date}`;
+      planningsMap[key] = p.heureEntree?.split('.')[0] || "-";
+    });
+  }
+
+  function formatDateFR(dateStr) {
+    const moisFr = ["janvier", "février", "mars", "avril", "mai", "juin",
+                    "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+    const d = new Date(dateStr);
+    return `${d.getDate()} ${moisFr[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  async function chargerRetards() {
+    const res = await fetch("/api/retards/aujourdhui");
+    const data = await res.json();
+    const tbody = document.getElementById("retardBody");
+    tbody.innerHTML = "";
+
+    if (data.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='4'>Aucun retard enregistré aujourd’hui.</td></tr>";
+      return;
+    }
+
+    data.forEach(p => {
+      const nom = usersMap[p.utilisateur?.id] || "-";
+      const date = formatDateFR(p.date);
+      const key = `${p.utilisateur?.id}_${p.date}`;
+      const heurePrevue = planningsMap[key] || "-";
+      const heureArrivee = p.heureArrivee?.split('.')[0] || "-";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${nom}</td>
+        <td>${date}</td>
+        <td>${heurePrevue}</td>
+        <td style="color: #c0392b;">${heureArrivee}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function chargerRetardsCumules() {
+    const res = await fetch("/api/retards/stats");
+    const data = await res.json();
+    const tbody = document.getElementById("retards-cumules");
+    tbody.innerHTML = "";
+
+    const noms = Object.keys(data);
+    if (noms.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='2'>Aucun retard enregistré.</td></tr>";
+      return;
+    }
+
+    noms.forEach(nom => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${nom}</td><td>${data[nom]}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.getElementById("filtreForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const start = document.getElementById("startDate").value;
+    const end = document.getElementById("endDate").value;
+
+    const res = await fetch(`/api/retards/periode?start=${start}&end=${end}`);
+    const data = await res.json();
+
+    const tbody = document.getElementById("retardBody");
+    tbody.innerHTML = "";
+
+    if (data.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='4'>Aucun retard sur cette période.</td></tr>";
+      return;
+    }
+
+    data.forEach(p => {
+      const nom = usersMap[p.utilisateur?.id] || "-";
+      const date = formatDateFR(p.date);
+      const key = `${p.utilisateur?.id}_${p.date}`;
+      const heurePrevue = planningsMap[key] || "-";
+      const heureArrivee = p.heureArrivee?.split('.')[0] || "-";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${nom}</td>
+        <td>${date}</td>
+        <td>${heurePrevue}</td>
+        <td style="color: #c0392b;">${heureArrivee}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    await chargerUtilisateurs();
+    await chargerPlannings();
+    await chargerRetards();
+    await chargerRetardsCumules();
+  });
+</script>
+</body>
+</html>

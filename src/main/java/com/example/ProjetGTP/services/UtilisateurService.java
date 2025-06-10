@@ -2,13 +2,16 @@ package com.example.ProjetGTP.services;
 
 
 import com.example.ProjetGTP.dtos.UtilisateurDTO;
+import com.example.ProjetGTP.entities.Role;
 import com.example.ProjetGTP.entities.Utilisateur;
+import com.example.ProjetGTP.mappers.UtilisateurMapper;
 import com.example.ProjetGTP.repositories.UtilisateurRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -39,6 +42,13 @@ public class UtilisateurService {
 
     public List<Utilisateur> getAllUsers() {
         return utilisateurRepository.findAll();
+    }
+
+    public List<UtilisateurDTO> getAllEmployes() {
+        return utilisateurRepository.findByRole(Role.EMPLOYE)
+                .stream()
+                .map(UtilisateurMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
 }

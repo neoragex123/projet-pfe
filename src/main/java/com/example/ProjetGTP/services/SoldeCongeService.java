@@ -17,9 +17,9 @@ import java.util.List;
 public class SoldeCongeService {
     @Autowired
     private CongeRepository congeRepository;
+
     @Autowired
     private UtilisateurRepository utilisateurRepository;
-
 
     public double calculerSolde(String email) {
         Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
@@ -29,11 +29,13 @@ public class SoldeCongeService {
         LocalDate today = LocalDate.now();
         Period period = Period.between(embauche.withDayOfMonth(1), today.withDayOfMonth(1));
 
-        int moisTravailles = period.getYears() * 12 + period.getMonths() + 1; // +1 si on veut inclure le mois en cours
+        int moisTravailles = period.getYears() * 12 + period.getMonths() + 1;
 
         double soldeTotal = moisTravailles * 1.5;
 
-        List<Conge> valides = congeRepository.findByDemandeurEmailAndStatut(email, StatutConge.VALIDE);
+        // Correctif : méthode repository adaptée au champ "utilisateur"
+        List<Conge> valides = congeRepository.findByUtilisateurEmailAndStatut(email, StatutConge.VALIDE);
+
         long joursPris = valides.stream()
                 .mapToLong(c -> ChronoUnit.DAYS.between(c.getDateDebut(), c.getDateFin()) + 1)
                 .sum();

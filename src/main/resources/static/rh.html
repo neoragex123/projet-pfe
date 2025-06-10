@@ -4,13 +4,64 @@
   <meta charset="UTF-8">
   <title>Validation congés – RH</title>
   <style>
-    body { font-family: Segoe UI; background: #f2f4f8; padding: 40px; }
-    table { border-collapse: collapse; width: 100%; background: #fff; }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
-    th { background-color: #003865; color: white; }
-    button { margin: 4px; padding: 6px 12px; cursor: pointer; border: none; border-radius: 4px; }
-    .valider { background-color: #28a745; color: white; }
-    .refuser { background-color: #dc3545; color: white; }
+    body {
+      font-family: Segoe UI;
+      background: #f2f4f8;
+      padding: 40px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: #fff;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #003865;
+      color: white;
+    }
+
+    button {
+      margin: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .valider {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .refuser {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .retour-btn {
+      margin-top: 30px;
+      padding: 12px 24px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .retour-btn:hover {
+      background-color: #0056b3;
+    }
   </style>
 </head>
 <body>
@@ -20,7 +71,7 @@
 <table>
   <thead>
   <tr>
-    <th>ID</th>
+    <th>Employé</th>
     <th>Type</th>
     <th>Date début</th>
     <th>Date fin</th>
@@ -28,8 +79,13 @@
     <th>Action</th>
   </tr>
   </thead>
-  <tbody id="tbody"></tbody>
+  <tbody id="tbody">
+  <tr><td colspan="6">Chargement...</td></tr>
+  </tbody>
 </table>
+
+<!-- Bouton retour -->
+<button class="retour-btn" onclick="window.location.href='/home.html'">← Retour au tableau de bord</button>
 
 <script>
   function chargerConges() {
@@ -38,29 +94,37 @@
       .then(data => {
         const tbody = document.getElementById("tbody");
         tbody.innerHTML = "";
+        if (data.length === 0) {
+          tbody.innerHTML = "<tr><td colspan='6'>Aucune demande en attente.</td></tr>";
+          return;
+        }
+
         data.forEach(conge => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${conge.id}</td>
-            <td>${conge.type}</td>
-            <td>${conge.dateDebut}</td>
-            <td>${conge.dateFin}</td>
-            <td>${conge.justificatifPath ? `<a href="/${conge.justificatifPath}" target="_blank">📎</a>` : '-'}</td>
-            <td>
-              <button class="valider" onclick="changerStatut(${conge.id}, 'VALIDE')">Valider</button>
-              <button class="refuser" onclick="changerStatut(${conge.id}, 'REFUSE')">Refuser</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>${conge.utilisateur?.prenom || ''} ${conge.utilisateur?.nom || ''}</td>
+    <td>${conge.type}</td>
+    <td>${conge.dateDebut}</td>
+    <td>${conge.dateFin}</td>
+    <td>${conge.justificatifPath ? `<a href="/${conge.justificatifPath}" target="_blank">📎</a>` : '-'}</td>
+    <td>
+      <button class="valider" onclick="changerStatut(${conge.id}, 'VALIDE')">Valider</button>
+      <button class="refuser" onclick="changerStatut(${conge.id}, 'REFUSE')">Refuser</button>
+    </td>
+  `;
+  tbody.appendChild(tr);
+});
       });
   }
 
   function changerStatut(id, statut) {
-    fetch(`/api/conges/${id}/statut?statut=${statut}`, { method: 'PATCH' })
-      .then(() => chargerConges());
+    fetch(`/api/conges/${id}/statut?statut=${statut}`, {
+      method: 'PATCH'
+    })
+    .then(() => chargerConges());
   }
 
+  // Initialisation
   chargerConges();
 </script>
 

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Alertes RH – Retards fréquents</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f7f9fc;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #d35400;
+      margin-bottom: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #e67e22;
+      color: white;
+    }
+
+    .retour {
+      display: block;
+      margin-top: 30px;
+      text-align: center;
+      color: #007bff;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .retour:hover {
+      text-decoration: underline;
+    }
+
+    .alert {
+      background-color: #fdecea;
+      color: #c0392b;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>🚨 Alertes RH – Retards fréquents</h2>
+
+  <div class="alert">
+    Les employés listés ci-dessous ont cumulé au moins <strong>3 retards</strong>.
+  </div>
+
+  <table>
+    <thead>
+    <tr>
+      <th>Nom</th>
+      <th>Email</th>
+      <th>Nombre de retards</th>
+    </tr>
+    </thead>
+    <tbody id="alertesBody">
+    <tr><td colspan="3">Chargement...</td></tr>
+    </tbody>
+  </table>
+
+  <div class="dashboard-stats" style="margin-top: 40px; display: flex; gap: 30px; justify-content: center;">
+    <!-- Stat: % en retard -->
+    <div style="background-color: #f8d7da; padding: 20px; border-radius: 10px; width: 250px; text-align: center; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+      <h3 style="color: #721c24;">📊 % en retard aujourd’hui</h3>
+      <p id="pourcentage-retard" style="font-size: 28px; font-weight: bold; color: #c0392b;">-</p>
+    </div>
+
+    <!-- Stat: Employé le plus en retard -->
+    <div style="background-color: #d1ecf1; padding: 20px; border-radius: 10px; width: 250px; text-align: center; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+      <h3 style="color: #0c5460;">👤 Plus souvent en retard</h3>
+      <p id="plus-retard-nom" style="font-size: 20px; font-weight: bold;">-</p>
+      <p id="plus-retard-nb" style="color: #007bff;">-</p>
+    </div>
+  </div>
+
+  <a href="/home.html" class="retour">← Retour au tableau de bord</a>
+</div>
+
+<script>
+
+  document.addEventListener("DOMContentLoaded", () => {
+    fetch("/api/retards/alertes")
+      .then(res => res.json())
+      .then(data => {
+        const tbody = document.getElementById("alertesBody");
+        tbody.innerHTML = "";
+
+        if (data.length === 0) {
+          tbody.innerHTML = "<tr><td colspan='3'>Aucune alerte pour le moment.</td></tr>";
+          return;
+        }
+
+        data.forEach(alert => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${alert.nom}</td>
+            <td>${alert.email}</td>
+            <td style="color: #c0392b;"><strong>${alert.retards}</strong></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+  });
+async function chargerStatsRetards() {
+    try {
+      const utilisateursRes = await fetch("/api/users/all");
+      const utilisateurs = await utilisateursRes.json();
+
+      const retardsRes = await fetch("/api/retards/tous");
+      const retards = await retardsRes.json();
+
+      const totalUsers = utilisateurs.length;
+      const retardUsers = new Set(retards.map(r => r.utilisateur.id));
+
+      // ➕ 1. Calcul du pourcentage d’utilisateurs en retard aujourd’hui
+      const pourcentage = Math.round((retardUsers.size / totalUsers) * 100);
+      document.getElementById("pourcentage-retard").textContent = `${pourcentage}%`;
+
+      // ➕ 2. Trouver l'utilisateur le plus en retard
+      const statsRes = await fetch("/api/retards/stats");
+      const stats = await statsRes.json(); // format : { "Ali Ben": 2, "X Y": 3 }
+
+      if (Object.keys(stats).length === 0) {
+        document.getElementById("plus-retard-nom").textContent = "Aucun";
+        document.getElementById("plus-retard-nb").textContent = "0 retard";
+        return;
+      }
+
+      // Trouver max
+      let maxNom = "";
+      let maxRetards = 0;
+      for (const nom in stats) {
+        if (stats[nom] > maxRetards) {
+          maxNom = nom;
+          maxRetards = stats[nom];
+        }
+      }
+
+      document.getElementById("plus-retard-nom").textContent = maxNom;
+      document.getElementById("plus-retard-nb").textContent = `${maxRetards} retards`;
+
+    } catch (err) {
+      console.error("Erreur lors du chargement des statistiques", err);
+    }
+  }
+
+  // Appel au chargement
+  document.addEventListener("DOMContentLoaded", chargerStatsRetards);
+
+  
+</script>
+</body>
+</html>

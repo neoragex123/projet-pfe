@@ -1,25 +1,112 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head><meta charset="UTF-8"><title>Créer un utilisateur</title></head>
+<head>
+  <meta charset="UTF-8">
+  <title>Créer un utilisateur - GTP</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f7fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .form-container {
+      background-color: #ffffff;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      width: 400px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #003865;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      margin-top: 25px;
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      background-color: #007bff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #msg {
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
 <body>
-<h2>Création utilisateur</h2>
-<form id="userForm">
-  <input name="nom" placeholder="Nom" required><br>
-  <input name="prenom" placeholder="Prénom" required><br>
-  <input name="email" placeholder="Email" type="email" required><br>
-  <input name="motDePasse" placeholder="Mot de passe" type="password" required><br>
-  <select name="role">
-    <option>EMPLOYE</option>
-    <option>MANAGER</option>
-    <option>RH</option>
-  </select><br><br>
-  <label>Date d'embauche :</label><br>
-  <input type="date" name="dateEmbauche" required value="<%= new java.util.Date().toISOString().slice(0,10) %>">
-  <button type="submit">Créer</button>
-</form>
-<div id="msg"></div>
+<div class="form-container">
+  <h2>👤 Création d’un utilisateur</h2>
+  <form id="userForm">
+    <label for="nom">Nom</label>
+    <input name="nom" id="nom" placeholder="Nom" required>
+
+    <label for="prenom">Prénom</label>
+    <input name="prenom" id="prenom" placeholder="Prénom" required>
+
+    <label for="email">Email</label>
+    <input name="email" id="email" type="email" placeholder="Email professionnel" required>
+
+    <label for="motDePasse">Mot de passe</label>
+    <input name="motDePasse" id="motDePasse" type="password" placeholder="Mot de passe temporaire" required>
+
+    <label for="role">Rôle</label>
+    <select name="role" id="role" required>
+      <option value="">-- Sélectionner un rôle --</option>
+      <option>EMPLOYE</option>
+      <option>MANAGER</option>
+      <option>RH</option>
+    </select>
+
+    <label for="dateEmbauche">Date d'embauche</label>
+    <input type="date" name="dateEmbauche" id="dateEmbauche" required>
+
+    <button type="submit">✅ Créer l’utilisateur</button>
+    <button type="button" onclick="window.location.href='/home.html'" style="margin-top: 15px; background-color: #6c757d; border: none; color: white; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
+      ← Retour au tableau de bord
+    </button>
+  </form>
+
+  <div id="msg"></div>
+</div>
 
 <script>
+  document.getElementById("dateEmbauche").valueAsDate = new Date();
+
   document.getElementById("userForm").addEventListener("submit", e => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.target));
@@ -28,7 +115,16 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     }).then(r => {
-      document.getElementById("msg").textContent = r.ok ? "✅ Utilisateur créé" : "❌ Erreur";
+      const msg = document.getElementById("msg");
+      if (r.ok) {
+        msg.textContent = "✅ Utilisateur créé avec succès.";
+        msg.style.color = "green";
+        e.target.reset();
+        document.getElementById("dateEmbauche").valueAsDate = new Date();
+      } else {
+        msg.textContent = "❌ Une erreur s'est produite.";
+        msg.style.color = "red";
+      }
     });
   });
 </script>

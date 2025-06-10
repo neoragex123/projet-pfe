@@ -1,6 +1,5 @@
 package com.example.ProjetGTP.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,10 +25,12 @@ public class Pointage {
 
     private LocalTime heureDepart;
 
-    @ManyToOne
-    @JsonIgnore
+    @ManyToOne(fetch = FetchType.EAGER)
     private Utilisateur utilisateur;
 
     @OneToMany(mappedBy = "pointage", cascade = CascadeType.ALL)
     private List<Pause> pauses;
+
+    @Column(nullable = false)
+    private boolean enRetard = false;
 }

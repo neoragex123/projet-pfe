@@ -6,6 +6,7 @@ import com.example.ProjetGTP.repositories.UtilisateurRepository;
 import com.example.ProjetGTP.services.UtilisateurService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,5 +44,17 @@ public class UtilisateurController {
         dto.setRole(user.getRole());
         return ResponseEntity.ok(dto);
     }
+    @GetMapping("/all")
+    @PreAuthorize("hasAnyRole('MANAGER','RH','SUPER_ADMIN')")
+    public List<Utilisateur> getAllUsers() {
+        return utilisateurRepository.findAll();
+    }
+
+    @GetMapping("/employes")
+    @PreAuthorize("hasAnyRole('RH', 'MANAGER', 'SUPER_ADMIN')")
+    public List<UtilisateurDTO> getEmployes() {
+        return utilisateurService.getAllEmployes();
+    }
+
 
 }

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestion des Plannings - Manager</title>
+  <style>
+  body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom right, #eef2f3, #dbe9f4);
+  margin: 0;
+  padding: 30px;
+  }
+
+  .container {
+  max-width: 600px;
+  margin: auto;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  }
+
+  h2 {
+  color: #003865;
+  }
+
+  label {
+  font-weight: bold;
+  display: block;
+  margin-top: 15px;
+  }
+
+  input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  }
+
+  button {
+  margin-top: 20px;
+  padding: 12px;
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  }
+
+  button:hover {
+  background-color: #0056b3;
+  }
+
+  #msg {
+  margin-top: 15px;
+  color: green;
+  font-weight: bold;
+  text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>🗓 Gestion des plannings</h2>
+
+  <form id="form-planning">
+    <label for="utilisateur">👤 Utilisateur :</label>
+    <select id="utilisateur" required></select>
+
+    <label for="date">📅 Date :</label>
+    <input type="date" id="date" required>
+
+    <label for="heureDebut">🕗 Heure d’entrée :</label>
+    <input type="time" id="heureDebut" required>
+
+    <label for="heurePauseDej">🍽 Pause déjeuner :</label>
+    <input type="time" id="heurePauseDej" required>
+
+    <label for="heureFin">🚪 Heure de sortie :</label>
+    <input type="time" id="heureFin" required>
+
+    <button type="submit">📤 Enregistrer</button>
+  </form>
+
+  <div id="msg"></div>
+  <div id="planning-table" style="margin-top: 30px;"></div>
+</div>
+
+<script>
+// Charger les utilisateurs (uniquement les employés)
+fetch('/api/users/employes')
+.then(res => res.json())
+.then(users => {
+const select = document.getElementById("utilisateur");
+users.forEach(u => {
+const opt = document.createElement("option");
+opt.value = u.id;
+opt.textContent = `${u.prenom} ${u.nom}`;
+select.appendChild(opt);
+});
+});
+
+document.getElementById("form-planning").addEventListener("submit", function(e) {
+e.preventDefault();
+
+const utilisateurId = document.getElementById("utilisateur").value;
+const date = document.getElementById("date").value;
+const heureDebut = document.getElementById("heureDebut").value;
+const heurePauseDej = document.getElementById("heurePauseDej").value;
+const heureFin = document.getElementById("heureFin").value;
+
+fetch('/api/planning', {
+method: 'POST',
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({
+utilisateurId, date, heureDebut, heurePauseDej, heureFin
+})
+})
+.then(res => {
+if (res.ok) {
+document.getElementById("msg").textContent = "✅ Planning enregistré.";
+this.reset();
+} else {
+res.text().then(txt => {
+document.getElementById("msg").textContent = "❌ " + txt;
+document.getElementById("msg").style.color = "red";
+});
+}
+})
+});
+</script>
+</body>
+</html>

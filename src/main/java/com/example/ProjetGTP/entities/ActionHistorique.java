@@ -6,38 +6,22 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Conge {
+public class ActionHistorique {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private LocalDate dateDebut;
-    private LocalDate dateFin;
-
-    @Enumerated(EnumType.STRING)
-    private TypeConge type;
-
-    @Enumerated(EnumType.STRING)
-    private StatutConge statut = StatutConge.EN_ATTENTE;
-
-    private String commentaire;
-
-    @Column(name = "justificatif_path")
-    private String justificatifPath;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Utilisateur utilisateur;
 
-    private LocalDate dateDemande;
-
-    private String validateurEmail;
-    private LocalDate dateValidation;
-
+    private String typeAction;
+    private LocalDateTime dateAction;
+    private String description;
 }

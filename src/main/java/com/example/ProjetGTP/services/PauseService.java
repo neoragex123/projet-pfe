@@ -21,7 +21,10 @@ public class PauseService {
     @Autowired
     private PointageRepository pointageRepository;
 
-    // ✅ Enregistre le début d'une pause
+    @Autowired
+    private HistoriqueService historiqueService;
+
+    // Enregistre le début d'une pause avec historique
     public void enregistrerPause(Utilisateur utilisateur, String type) {
         LocalDate today = LocalDate.now();
 
@@ -34,19 +37,24 @@ public class PauseService {
         pause.setPointage(pointage);
 
         pauseRepository.save(pause);
+
+        historiqueService.enregistrer(utilisateur.getEmail(), "Début pause",
+                "Début de pause " + type + " à " + pause.getHeureDebut().toString());
     }
 
-    // ✅ Clôture la dernière pause en cours
+    // Clôture la dernière pause en cours avec historique
     public void cloturerDernierePause(Pointage pointage) {
         List<Pause> pauses = pauseRepository.findByPointage(pointage);
 
-        // Trouve la dernière pause sans heure de fin
         Pause derniere = pauses.stream()
                 .filter(p -> p.getHeureFin() == null)
-                .reduce((first, second) -> second) // dernière
+                .reduce((first, second) -> second) // dernière pause ouverte
                 .orElseThrow(() -> new RuntimeException("Aucune pause en cours."));
 
         derniere.setHeureFin(LocalTime.now());
         pauseRepository.save(derniere);
+
+        historiqueService.enregistrer(pointage.getUtilisateur().getEmail(), "Fin pause",
+                "Fin de pause " + derniere.getType() + " à " + derniere.getHeureFin().toString());
     }
 }

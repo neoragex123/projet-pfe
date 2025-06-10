@@ -12,6 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
+
 public class SecurityConfig {
 
     @Autowired
@@ -28,6 +29,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/conges/en-attente").hasAnyRole("RH", "MANAGER", "SUPER_ADMIN")
                         .requestMatchers("/ajout-user.html").hasAnyRole("RH", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("RH", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/planning").hasRole("MANAGER")
+                        .requestMatchers("/api/planning/all").hasAnyRole("MANAGER", "RH", "SUPER_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

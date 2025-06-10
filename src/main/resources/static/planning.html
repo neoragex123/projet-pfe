@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mon planning</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f6fa;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background: #fff;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #003865;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #003865;
+      color: white;
+    }
+
+    .retour {
+      display: block;
+      margin: 20px auto;
+      text-align: center;
+      text-decoration: none;
+      color: #007bff;
+      font-weight: bold;
+    }
+
+    .retour:hover {
+      text-decoration: underline;
+    }
+
+    .error {
+      color: red;
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>🗓 Mon planning (15 jours passés et 15 jours à venir)</h2>
+  <table>
+    <thead>
+    <tr>
+      <th>Date</th>
+      <th>Heure d’entrée</th>
+      <th>Pause déjeuner</th>
+      <th>Heure de sortie</th>
+    </tr>
+    </thead>
+    <tbody id="planning-body">
+    <tr><td colspan="4">Chargement en cours...</td></tr>
+    </tbody>
+  </table>
+  <p class="error" id="erreur-planning"></p>
+  <a href="/home.html" class="retour">← Retour au tableau de bord</a>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    fetch("/api/planning/mes")
+      .then(res => {
+        if (!res.ok) throw new Error("Erreur de chargement");
+        return res.json();
+      })
+      .then(data => {
+        const tbody = document.getElementById("planning-body");
+        tbody.innerHTML = "";
+
+        if (data.length === 0) {
+          tbody.innerHTML = "<tr><td colspan='4'>Aucun planning disponible.</td></tr>";
+          return;
+        }
+
+        data.forEach(p => {
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+            <td>${p.date}</td>
+            <td>${p.heureEntree ? p.heureEntree.split('.')[0] : '-'}</td>
+            <td>${p.heurePauseDejeuner ? p.heurePauseDejeuner.split('.')[0] : '-'}</td>
+            <td>${p.heureSortie ? p.heureSortie.split('.')[0] : '-'}</td>
+          `;
+
+          tbody.appendChild(row);
+        });
+      })
+      .catch(() => {
+        document.getElementById("erreur-planning").textContent = "❌ Erreur lors du chargement du planning.";
+      });
+  });
+</script>
+</body>
+</html>

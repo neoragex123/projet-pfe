@@ -151,6 +151,7 @@
         <p><span class="label">Email :</span> <span id="email">-</span></p>
         <p><span class="label">Rôle :</span> <span id="role">-</span></p>
         <p><span class="label">Solde de congés :</span> <span id="soldeConges">-</span> jours</p>
+        <button onclick="window.location.href='profil.html'">👤 Voir mon profil</button>
     </div>
 
     <!-- Pointage -->
@@ -170,7 +171,25 @@
         <ul>
             <li><a href="/ajout-user.html">👤 Ajouter un utilisateur</a></li>
             <li><a href="/rh.html">📋 Gestion des congés</a></li>
+            <li><a href="/gestion-planning.html">🗓 Créer un planning</a></li>
+            <li><a href="/heures-travaillees.html">📅 Heures travaillées</a></li>
+            <li><a href="/plannings-employes.html">📆 Voir les plannings des employés</a></li>
+            <li>
+                <a href="/retards.html">
+                    🚨 Retards du jour
+                    <span id="badge-retards" style="color: red; font-weight: bold; display: none;">🔴</span>
+                </a>
+            </li>
+            <li><a href="/retards-alertes.html">🚨 Alertes retards fréquents</a></li>
+
+
         </ul>
+    </div>
+    <div class="menu-block" style="margin-top: 25px;">
+        <h3>Menu</h3>
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="window.location.href='planning.html'">📅 Voir mon planning</button>
+        </div>
     </div>
 
     <!-- Pause -->
@@ -247,6 +266,34 @@
             <p id="msg-conge" style="color: green;"></p>
         </form>
     </div>
+
+    <!-- Modale de création de planning -->
+    <div id="planningModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePlanningModal()">&times;</span>
+            <h3>🗓 Créer un planning</h3>
+            <form id="form-planning">
+                <label>Email de l'utilisateur :</label><br>
+                <input type="email" name="email" required><br><br>
+
+                <label>Date :</label><br>
+                <input type="date" name="date" required><br><br>
+
+                <label>Heure d’entrée :</label><br>
+                <input type="time" name="heureDebut" required><br><br>
+
+                <label>Heure de sortie :</label><br>
+                <input type="time" name="heureFin" required><br><br>
+
+                <label>Heure de pause déjeuner :</label><br>
+                <input type="time" name="heurePauseDejeuner" required><br><br>
+
+                <button type="submit">📥 Enregistrer</button>
+                <p id="msg-planning" style="color: green;"></p>
+            </form>
+        </div>
+    </div>
+
 </div>
 <script>
     let arriveeTime = null;
@@ -305,7 +352,7 @@
           document.getElementById("prenom").textContent = data.prenom;
           document.getElementById("email").textContent = data.email;
           document.getElementById("role").textContent = data.role;
-          if (data.role === 'RH' || data.role === 'SUPER_ADMIN') {
+           if (data.role === 'RH' || data.role === 'SUPER_ADMIN' || data.role === 'MANAGER') {
             document.getElementById("menu-rh").style.display = 'block';
           }
         });
@@ -449,12 +496,71 @@
     loadPauses();
     loadCongesUtilisateur();
     loadSoldeConges();
+    verifierRetardsDuJour
 
     // ✅ Horloge en direct
     setInterval(() => {
       document.getElementById("heureActuelle").textContent = formatTime(new Date());
       updateDureeDepuisArrivee();
     }, 1000);
+
+    function openPlanningModal() {
+      document.getElementById("planningModal").style.display = "block";
+    }
+
+    function closePlanningModal() {
+      document.getElementById("planningModal").style.display = "none";
+    }
+
+    document.getElementById("form-planning").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const form = e.target;
+
+      const payload = {
+        email: form.email.value,
+        date: form.date.value,
+        heureDebut: form.heureDebut.value,
+        heureFin: form.heureFin.value,
+        heurePauseDejeuner: form.heurePauseDejeuner.value
+      };
+
+      fetch("/api/planning", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      })
+        .then(res => {
+          if (!res.ok) throw new Error("Erreur lors de la création");
+          return res.text();
+        })
+        .then(() => {
+          document.getElementById("msg-planning").textContent = "✅ Planning enregistré.";
+          setTimeout(() => {
+            closePlanningModal();
+            form.reset();
+            document.getElementById("msg-planning").textContent = "";
+          }, 1500);
+        })
+        .catch(() => {
+          document.getElementById("msg-planning").textContent = "❌ Erreur lors de l'enregistrement.";
+        });
+});
+
+    function verifierRetardsDuJour() {
+  fetch("/api/retards/aujourdhui")
+    .then(res => res.json())
+    .then(data => {
+      if (data.length > 0) {
+        document.getElementById("badge-retards").style.display = "inline";
+      } else {
+        document.getElementById("badge-retards").style.display = "none";
+      }
+    });
+}
+
+
 </script>
 </body>
 </html>

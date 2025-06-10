@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestion du planning</title>
+  <style>
+          body {
+          font-family: Arial, sans-serif;
+          background-color: #f3f6fc;
+          padding: 40px;
+          }
+
+          .container {
+          background-color: white;
+          max-width: 700px;
+          margin: auto;
+          padding: 30px;
+          border-radius: 10px;
+          box-shadow: 0 0 10px rgba(0,0,0,0.1);
+          }
+
+          h2 {
+          color: #003865;
+          margin-bottom: 20px;
+          }
+
+          .form-block {
+          margin-top: 20px;
+          }
+
+          label {
+          display: block;
+          margin-bottom: 5px;
+          font-weight: bold;
+          }
+
+          input, select, button {
+          width: 100%;
+          padding: 10px;
+          margin-bottom: 15px;
+          border-radius: 6px;
+          border: 1px solid #ccc;
+          font-size: 14px;
+          }
+
+          button {
+          background-color: #007bff;
+          color: white;
+          border: none;
+          cursor: pointer;
+          }
+
+          button:hover {
+          background-color: #0056b3;
+          }
+
+          p {
+          font-weight: bold;
+          margin-top: 10px;
+          }
+  </style>
+
+</head>
+<body>
+<div class="container">
+  <h2>🗓 Création d’un planning</h2>
+
+  <form id="planning-form" class="form-block">
+    <h3>Planning pour un jour</h3>
+    <label>👤 Sélectionner un utilisateur :</label>
+    <select id="utilisateurId" name="utilisateurId" required></select><br><br>
+
+    <label>📅 Date :</label>
+    <input type="date" name="date" required><br><br>
+
+    <label>🕗 Heure d’entrée :</label>
+    <input type="time" name="heureEntree" required><br><br>
+
+    <label>🍽 Heure pause déjeuner :</label>
+    <input type="time" name="heurePauseDejeuner" required><br><br>
+
+    <label>🏁 Heure de sortie :</label>
+    <input type="time" name="heureSortie" required><br><br>
+
+    <button type="submit">✅ Enregistrer</button>
+    <p id="msg-planning"></p>
+  </form>
+
+  <hr style="margin: 40px 0;">
+
+  <form id="weekly-planning-form" class="form-block">
+    <h3>📆 Générer planning pour une semaine</h3>
+    <label>👤 Utilisateur :</label>
+    <select id="weekly-user" name="utilisateurId" required></select><br><br>
+
+    <label>📅 Date de début :</label>
+    <input type="date" name="startDate" required><br><br>
+
+    <label>🕗 Heure d’entrée :</label>
+    <input type="time" name="heureEntree" required><br><br>
+
+    <label>🍽 Pause déjeuner :</label>
+    <input type="time" name="pauseDejeuner" required><br><br>
+
+    <label>🏁 Heure de sortie :</label>
+    <input type="time" name="heureSortie" required><br><br>
+
+    <button type="submit">📆 Générer la semaine</button>
+    <p id="msg-weekly"></p>
+  </form>
+  <a href="/home.html" class="retour">← Retour au tableau de bord</a>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+  // Charger les utilisateurs dans les deux selects
+  fetch("/api/users/all")
+    .then(res => res.json())
+    .then(data => {
+      const userSelects = [document.getElementById("utilisateurId"), document.getElementById("weekly-user")];
+      userSelects.forEach(select => {
+        select.innerHTML = "";
+        data.forEach(user => {
+          const opt = document.createElement("option");
+          opt.value = user.id;
+          opt.textContent = `${user.nom} ${user.prenom} (${user.email})`;
+          select.appendChild(opt);
+        });
+      });
+    });
+
+  // Planning journalier
+  document.getElementById("planning-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const payload = {
+      utilisateur: { id: form.utilisateurId.value },
+      date: form.date.value,
+      heureEntree: form.heureEntree.value,
+      heureSortie: form.heureSortie.value,
+      heurePauseDejeuner: form.heurePauseDejeuner.value
+    };
+
+    fetch("/api/planning", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Erreur");
+        return res.text();
+      })
+      .then(() => {
+        document.getElementById("msg-planning").textContent = "✅ Planning enregistré avec succès.";
+        form.reset();
+        setTimeout(() => document.getElementById("msg-planning").textContent = "", 3000);
+      })
+      .catch(() => {
+        document.getElementById("msg-planning").textContent = "❌ Une erreur est survenue.";
+      });
+  });
+
+  // Planning hebdomadaire
+  document.getElementById("weekly-planning-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const form = e.target;
+
+    const utilisateurId = form.utilisateurId.value;
+    const startDate = new Date(form.startDate.value);
+    const heureEntree = form.heureEntree.value;
+    const heureSortie = form.heureSortie.value;
+    const pauseDejeuner = form.pauseDejeuner.value;
+
+    const payloads = [];
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      const dateStr = date.toISOString().split("T")[0];
+
+      payloads.push({
+        utilisateur: { id: utilisateurId },
+        date: dateStr,
+        heureEntree,
+        heureSortie,
+        heurePauseDejeuner: pauseDejeuner
+      });
+    }
+
+    Promise.all(payloads.map(p =>
+      fetch("/api/planning", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(p)
+      })
+    ))
+      .then(() => {
+        document.getElementById("msg-weekly").textContent = "✅ Planning de la semaine généré.";
+        form.reset();
+        setTimeout(() => document.getElementById("msg-weekly").textContent = "", 3000);
+      })
+      .catch(() => {
+        document.getElementById("msg-weekly").textContent = "❌ Erreur lors de la génération.";
+      });
+  });
+});
+
+</script>
+</body>
+</html>

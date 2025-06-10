@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Plannings des employés</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #003865;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    select, button {
+      padding: 10px;
+      margin: 10px 10px 20px 0;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    th {
+      background-color: #003865;
+      color: white;
+    }
+
+    .retour {
+      display: block;
+      margin-top: 30px;
+      text-align: center;
+      color: #007bff;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .retour:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>📅 Plannings des employés</h2>
+
+  <label for="employeSelect">👤 Sélectionner un employé :</label>
+  <select id="employeSelect">
+    <option value="">-- Tous les employés --</option>
+  </select>
+
+  <button onclick="chargerTousLesPlannings()">Afficher tout</button>
+
+  <table>
+    <thead>
+    <tr>
+      <th>Nom</th>
+      <th>Date</th>
+      <th>Heure d'entrée</th>
+      <th>Pause déjeuner</th>
+      <th>Heure de sortie</th>
+    </tr>
+    </thead>
+    <tbody id="planningBody">
+    <tr><td colspan="5">Chargement...</td></tr>
+    </tbody>
+  </table>
+
+  <a href="/home.html" class="retour">← Retour au tableau de bord</a>
+</div>
+
+<script>
+  let usersMap = {};
+
+  function chargerEmployes() {
+    fetch('/api/users/all')
+      .then(res => res.json())
+      .then(data => {
+        const select = document.getElementById("employeSelect");
+        select.innerHTML = `<option value="">-- Tous les employés --</option>`;
+        data.forEach(user => {
+          usersMap[user.id] = `${user.prenom} ${user.nom}`;
+          const opt = document.createElement("option");
+          opt.value = user.id;
+          opt.textContent = `${user.prenom} ${user.nom} (${user.email})`;
+          select.appendChild(opt);
+        });
+      });
+  }
+
+  document.getElementById("employeSelect").addEventListener("change", () => {
+    const id = document.getElementById("employeSelect").value;
+    if (id) {
+      fetch(`/api/planning/tous`)
+        .then(res => res.json())
+        .then(data => {
+          const filtré = data.filter(p => p.utilisateur.id == id);
+          afficherPlannings(filtré);
+        });
+    }
+  });
+
+  function chargerTousLesPlannings() {
+    fetch('/api/planning/tous')
+      .then(res => res.json())
+      .then(data => afficherPlannings(data));
+  }
+
+  function afficherPlannings(plannings) {
+    const tbody = document.getElementById("planningBody");
+    tbody.innerHTML = "";
+    if (plannings.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='5'>Aucun planning trouvé.</td></tr>";
+      return;
+    }
+    plannings.forEach(p => {
+      const tr = document.createElement("tr");
+      const nom = usersMap[p.utilisateur.id] || "-";
+      tr.innerHTML = `
+        <td>${nom}</td>
+        <td>${p.date}</td>
+        <td>${p.heureEntree?.split('.')[0] || "-"}</td>
+        <td>${p.heurePauseDejeuner?.split('.')[0] || "-"}</td>
+        <td>${p.heureSortie?.split('.')[0] || "-"}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Initialisation
+  chargerEmployes();
+  chargerTousLesPlannings();
+</script>
+</body>
+</html>

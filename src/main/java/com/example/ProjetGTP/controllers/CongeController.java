@@ -26,35 +26,35 @@ public class CongeController {
     private CongeService congeService;
 
     @Autowired
-    private CongeRepository congeRepository;
+    private SoldeCongeService soldeCongeService;
 
-    // 1. Créer une nouvelle demande de congé
+    // Créer une nouvelle demande de congé
     @PostMapping
     public Conge demanderConge(@RequestBody Conge conge, Authentication authentication) {
         return congeService.creerConge(conge, authentication.getName());
     }
 
-    // 2. Voir les demandes de l'utilisateur connecté
+    // Voir les congés de l'utilisateur connecté
     @GetMapping("/mes")
     public List<Conge> mesConges(Authentication authentication) {
         return congeService.getCongesUtilisateur(authentication.getName());
     }
 
-    // 3. Voir toutes les demandes (RH ou admin)
+    // Voir toutes les demandes (RH ou admin)
     @GetMapping
     @PreAuthorize("hasAnyRole('MANAGER','RH','SUPER_ADMIN')")
     public List<Conge> tousLesConges() {
         return congeService.getAll();
     }
 
-    // 4. Voir les demandes EN ATTENTE (pour page RH)
+    // Voir les demandes EN ATTENTE (pour page RH)
     @GetMapping("/en-attente")
     @PreAuthorize("hasAnyRole('MANAGER','RH','SUPER_ADMIN')")
     public List<Conge> getEnAttente() {
-        return congeRepository.findByStatut(StatutConge.EN_ATTENTE);
+        return congeService.getCongesEnAttenteAvecUtilisateur();
     }
 
-    // 5. Valider ou refuser un congé (workflow RH/Manager)
+    // Valider ou refuser un congé (workflow RH/Manager)
     @PatchMapping("/{id}/statut")
     @PreAuthorize("hasAnyRole('MANAGER','RH','SUPER_ADMIN')")
     public Conge changerStatutConge(
@@ -64,7 +64,7 @@ public class CongeController {
         return congeService.changerStatut(id, statut, auth.getName());
     }
 
-    // 6. Upload du justificatif (après création de la demande)
+    // Upload du justificatif (après création de la demande)
     @PostMapping("/{id}/justificatif")
     public Conge uploadJustificatif(@PathVariable Long id,
                                     @RequestParam("file") MultipartFile file) throws IOException {
@@ -85,15 +85,12 @@ public class CongeController {
         file.transferTo(filepath.toFile());
         System.out.println("📎 Fichier transféré : " + filepath.toString());
 
-
         conge.setJustificatifPath(filepath.toString());
 
         return congeService.updateConge(conge);
     }
 
-    @Autowired
-    private SoldeCongeService soldeCongeService;
-
+    // Calcul du solde de congés
     @GetMapping("/solde")
     public double getSolde(Authentication authentication) {
         return soldeCongeService.calculerSolde(authentication.getName());
